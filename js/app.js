@@ -92,27 +92,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const aiTagsContainer = document.getElementById('aiTagsContainer');
     const feedbackButton = document.getElementById('feedbackButton');
     
-    // Get the editApiKeyButton reference without redeclaring it
-    const apiKeyButton = document.getElementById('editApiKeyButton'); // FIXED: renamed variable to avoid redeclaration
-    if (apiKeyButton) {
+    // Setup API key edit button listener with additional logging
+    const editApiKeyButton = document.getElementById('editApiKeyButton');
+    if (editApiKeyButton) {
         console.log('Edit API Key button found, setting up listener');
-        apiKeyButton.addEventListener('click', () => {
+        editApiKeyButton.addEventListener('click', () => {
             console.log('Edit API Key button clicked');
             const newKey = prompt('Enter a new OpenAI API key:');
             if (newKey) {
-                console.log('New API key entered');
+                console.log('New API key entered:', newKey);
                 localStorage.setItem('openai_api_key', newKey);
-                
-                // Update all services with the new API key
-                if (chatService) chatService.setApiKey(newKey);
-                if (transcriptionService) transcriptionService.setApiKey(newKey);
-                if (tagExtractor) tagExtractor.setApiKey(newKey);
-                
-                // Update the visualization controller if it exists
-                if (window.visualizationController) {
-                    window.visualizationController.setApiKey(newKey);
-                }
-                
+                chatService.setApiKey(newKey);
+                transcriptionService.setApiKey(newKey);
+                tagExtractor.setApiKey(newKey);
                 alert('API key updated successfully.');
                 verifyApiKey();
             } else {
@@ -1809,114 +1801,4 @@ function determineContextMood(tags, text) {
     // Only return a specific mood if we have enough matches, otherwise "neutral"
     return maxMatches >= 2 ? topMood : 'neutral';
 }
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Make sure AbstractVisualization is initialized first
-    if (typeof AbstractVisualization === 'undefined') {
-        console.error('AbstractVisualization is not defined. Check if abstract-visualization.js is loaded properly.');
-    } else {
-        try {
-            // Initialize the visualization with the container ID
-            window.visualization = new AbstractVisualization('visualizationContainer');
-            
-            // Initialize the visualization controller
-            if (typeof VisualizationController !== 'undefined') {
-                window.visualizationController = new VisualizationController(window.visualization);
-                
-                // Set API key from localStorage
-                const apiKey = localStorage.getItem('openai_api_key');
-                if (apiKey) {
-                    window.visualizationController.setApiKey(apiKey);
-                }
-                
-                console.log('Visualization controller initialized');
-            } else {
-                console.error('VisualizationController is not defined. Check if visualization-controller.js is loaded properly.');
-            }
-            
-            console.log('Abstract visualization initialized');
-        } catch (error) {
-            console.error('Error initializing AbstractVisualization:', error);
-        }
-    }
-    
-    // ...existing code...
 });
-
-// ...existing code...
-
-// Update the visualization with speech text
-async function updateVisualization(text, tags) {
-    // Skip if text is too short
-    if (!text || text.length < 15) {
-        console.log('Text too short for visualization update');
-        return;
-    }
-    
-    // Calculate sentiment score from text (basic)
-    const sentiment = analyzeTextSentiment(text);
-    
-    // If we have an LLM-powered visualization controller, use it
-    if (window.visualizationController) {
-        console.log('Using LLM visualization controller');
-        try {
-            // Process speech text with LLM for enhanced visualization
-            await window.visualizationController.processSpeechText(text, sentiment);
-        } catch (error) {
-            console.error('Error using LLM visualization controller:', error);
-            // Fall back to standard visualization if LLM fails
-            updateStandardVisualization(sentiment, tags);
-        }
-    } else {
-        // Fall back to standard visualization
-        updateStandardVisualization(sentiment, tags);
-    }
-}
-
-// Standard visualization update without LLM
-function updateStandardVisualization(sentiment, tags) {
-    if (window.visualization) {
-        console.log('Using standard visualization update');
-        // Use the simple visualization update with tags and sentiment
-        window.visualization.updateVisualization(sentiment, tags || []);
-    }
-}
-
-// Hook this into the existing tag extraction and transcription system
-// ...existing code...
-
-// Update when we get new transcript text
-function handleTranscriptUpdate(text, tags = null) {
-    // Update visualization with the new text content
-    updateVisualization(text, tags);
-}
-
-// Make sure the editApiKeyButton updates the visualization controller too
-const editApiKeyButton = document.getElementById('editApiKeyButton');
-if (editApiKeyButton) {
-    editApiKeyButton.addEventListener('click', () => {
-        console.log('Edit API Key button clicked');
-        const newKey = prompt('Enter a new OpenAI API key:');
-        if (newKey) {
-            console.log('New API key entered');
-            localStorage.setItem('openai_api_key', newKey);
-            
-            // Update all services that use the API key
-            if (chatService) chatService.setApiKey(newKey);
-            if (transcriptionService) transcriptionService.setApiKey(newKey);
-            if (tagExtractor) tagExtractor.setApiKey(newKey);
-            
-            // Update the visualization controller
-            if (window.visualizationController) {
-                window.visualizationController.setApiKey(newKey);
-            }
-            
-            alert('API key updated successfully.');
-            verifyApiKey();
-        } else {
-            console.log('No new API key provided');
-        }
-    });
-}
-
-// ...existing code...

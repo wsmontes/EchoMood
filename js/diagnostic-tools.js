@@ -177,15 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Run quick language check on startup to detect issues
     setTimeout(() => {
         try {
-            if (typeof window.getEffectiveLanguage === 'function') {
-                console.log("[DIAGNOSTIC] Startup language check:", window.getEffectiveLanguage());
-            } else {
-                console.warn("[DIAGNOSTIC] getEffectiveLanguage is not yet defined. This might be normal during startup.");
-                
-                // If we can directly access localStorage, we can still check for language setting
-                const storedLang = localStorage.getItem('echolife_language') || 'en-US';
-                console.log("[DIAGNOSTIC] localStorage language:", storedLang);
-            }
+            console.log("[DIAGNOSTIC] Startup language check:", window.getEffectiveLanguage());
         } catch (e) {
             console.error("[DIAGNOSTIC] Startup language check failed:", e);
         }
